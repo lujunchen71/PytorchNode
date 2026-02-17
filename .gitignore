@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# PyTorch
+*.pth
+*.pt
+*.ckpt
+checkpoint/
+checkpoints/
+models/
+*.onnx
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# 项目特定
+*.pnne.autosave
+*.pnne.backup
+temp/
+tmp/
+cache/
+logs/
+*.log
+
+# 数据文件
+data/
+datasets/
+*.csv
+*.npy
+*.npz
+*.h5
+*.hdf5
+
+# 用户配置
+config/user_settings.json
+config/recent_projects.json
+
+# 操作系统
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 其他
+*.bak
+*.orig
+*.rej
+.sass-cache/

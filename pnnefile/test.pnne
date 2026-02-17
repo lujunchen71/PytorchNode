@@ -1,0 +1,93 @@
+{
+  "version": "0.1.0",
+  "type": "pnne_project",
+  "graph": {
+    "name": "main_graph",
+    "nodes": [
+      {
+        "id": "77640a14-63d6-4947-9d59-fda6e428a387",
+        "type": "TestInput",
+        "name": "TestInput_77640a14",
+        "position": [
+          -362.0,
+          -168.0
+        ],
+        "properties": {},
+        "input_pins": [],
+        "output_pins": [
+          {
+            "name": "output",
+            "direction": "output",
+            "type": "tensor",
+            "default_value": null,
+            "is_list": false,
+            "label": "输出"
+          }
+        ]
+      },
+      {
+        "id": "e16b9196-bee5-426d-a46c-eef0e9dfc489",
+        "type": "TestProcess",
+        "name": "TestProcess_e16b9196",
+        "position": [
+          -220.0,
+          47.0
+        ],
+        "properties": {
+          "value": 42
+        },
+        "input_pins": [
+          {
+            "name": "input",
+            "direction": "input",
+            "type": "tensor",
+            "default_value": null,
+            "is_list": false,
+            "label": "输入"
+          }
+        ],
+        "output_pins": [
+          {
+            "name": "output",
+            "direction": "output",
+            "type": "tensor",
+            "default_value": null,
+            "is_list": false,
+            "label": "输出"
+          }
+        ]
+      },
+      {
+        "id": "0da9a8f0-7c55-4826-a43c-cb50f212dbaf",
+        "type": "TestInput",
+        "name": "TestInput_0da9a8f0",
+        "position": [
+          81.53201282156655,
+          149.25618476206134
+        ],
+        "properties": {},
+        "input_pins": [],
+        "output_pins": [
+          {
+            "name": "output",
+            "direction": "output",
+            "type": "tensor",
+            "default_value": null,
+            "is_list": false,
+            "label": "输出"
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "id": "fc60f5fe-e0e1-469a-96b7-f18163be4baa",
+        "source_node": "/TestInput_77640a14",
+        "source_pin": "output",
+        "target_node": "/TestProcess_e16b9196",
+        "target_pin": "input"
+      }
+    ],
+    "subgraphs": {}
+  }
+}
