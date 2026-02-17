@@ -55,8 +55,8 @@
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/pytorch-node-editor.git
-cd pytorch-node-editor
+git clone https://github.com/lujunchen71/PytorchNode.git
+cd PytorchNode
 
 # 安装依赖
 pip install -r requirements.txt
@@ -145,7 +145,7 @@ python main.py
 ## 🎯 项目结构
 
 ```
-pytorch-node-editor/
+PytorchNode/
 ├── core/                   # 核心功能模块
 │   ├── base/              # 基础类（Node, Pin, Connection等）
 │   ├── nodes/             # 节点实现
@@ -201,7 +201,7 @@ mypy core/
 
 ## 📧 联系
 
-- 问题反馈: [GitHub Issues](https://github.com/yourusername/pytorch-node-editor/issues)
+- 问题反馈: [GitHub Issues](https://github.com/lujunchen71/PytorchNode/issues)
 - 邮箱: your.email@example.com
 
 ## 🗺️ 路线图
