@@ -2,11 +2,14 @@
 Linear节点 - 全连接层（nn.Linear）
 """
 
-import torch
-import torch.nn as nn
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from core.base import Node, NodeCategory, PinType, register_node
+
+# 延迟导入 PyTorch，只在类型检查时导入
+if TYPE_CHECKING:
+    import torch
+    import torch.nn as nn
 
 
 @register_node
@@ -34,11 +37,12 @@ class LinearNode(Node):
         }
 
         # PyTorch模块（延迟初始化）
-        self._module: Optional[nn.Linear] = None
+        self._module = None
 
-    def get_module(self) -> nn.Linear:
+    def get_module(self):
         """获取或创建PyTorch模块"""
         if self._module is None:
+            import torch.nn as nn
             self._module = nn.Linear(
                 in_features=self.get_property("in_features"),
                 out_features=self.get_property("out_features"),
@@ -48,6 +52,8 @@ class LinearNode(Node):
 
     def execute(self) -> None:
         """执行节点计算"""
+        import torch
+        
         # 获取输入
         input_tensor = self.get_input_value("input")
 

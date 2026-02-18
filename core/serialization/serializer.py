@@ -32,6 +32,28 @@ class Serializer:
         return node_graph.to_dict()
 
     @staticmethod
+    def _count_all_nodes_and_connections(node_graph) -> tuple:
+        """
+        递归统计节点图中所有节点和连接的数量（包括子图）
+        
+        Args:
+            node_graph: 节点图对象
+            
+        Returns:
+            (节点总数, 连接总数)
+        """
+        total_nodes = len(node_graph.nodes)
+        total_connections = len(node_graph.connections)
+        
+        # 递归统计子图
+        for subgraph in node_graph.subgraphs.values():
+            sub_nodes, sub_conns = Serializer._count_all_nodes_and_connections(subgraph)
+            total_nodes += sub_nodes
+            total_connections += sub_conns
+        
+        return total_nodes, total_connections
+
+    @staticmethod
     def save_to_file(node_graph, file_path: str) -> bool:
         """
         保存节点图到文件
@@ -44,8 +66,16 @@ class Serializer:
             是否成功
         """
         try:
+            # 调试：检查 node_graph 状态
+            logger.info(f"[SAVE DEBUG] node_graph.name: {node_graph.name}")
+            logger.info(f"[SAVE DEBUG] node_graph.nodes: {list(node_graph.nodes.keys())}")
+            logger.info(f"[SAVE DEBUG] node_graph.subgraphs: {list(node_graph.subgraphs.keys())}")
+            for name, sg in node_graph.subgraphs.items():
+                logger.info(f"[SAVE DEBUG]   subgraph '{name}': nodes={list(sg.nodes.keys())}")
+            
             # 序列化
             data = Serializer.serialize_graph(node_graph)
+            logger.info(f"[SAVE DEBUG] Serialized data subgraphs: {list(data.get('subgraphs', {}).keys())}")
             
             # 添加元数据
             project_data = {
@@ -62,9 +92,12 @@ class Serializer:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(project_data, f, indent=2, ensure_ascii=False)
             
+            # 递归统计所有节点和连接（包括子图）
+            total_nodes, total_connections = Serializer._count_all_nodes_and_connections(node_graph)
+            
             logger.info(f"Project saved to: {file_path}")
-            logger.info(f"  - Nodes: {len(node_graph.nodes)}")
-            logger.info(f"  - Connections: {len(node_graph.connections)}")
+            logger.info(f"  - Nodes: {total_nodes} (including subgraphs)")
+            logger.info(f"  - Connections: {total_connections} (including subgraphs)")
             
             return True
             
@@ -139,6 +172,7 @@ class Serializer:
                 node_id = node_data.get("id")
                 position = node_data.get("position", [0.0, 0.0])
                 properties = node_data.get("properties", {})
+                instance_parameters = node_data.get("instance_parameters", {})
                 
                 logger.info(f"Creating node: {node_name} (type={node_type})")
                 
@@ -156,6 +190,11 @@ class Serializer:
                 # 恢复属性
                 for key, value in properties.items():
                     node.set_property(key, value)
+                
+                # Phase 3.5: 恢复实例参数
+                if instance_parameters:
+                    node.instance_parameters = instance_parameters.copy()
+                    logger.info(f"  ✓ Restored {len(instance_parameters)} instance parameters")
                 
                 # 添加到节点图
                 node_graph.add_node(node)

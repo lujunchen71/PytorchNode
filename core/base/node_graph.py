@@ -13,6 +13,7 @@ from collections import deque
 
 from .node import Node
 from .connection import Connection
+from .path_manager import PathManager
 
 
 class NodeGraph:
@@ -111,11 +112,16 @@ class NodeGraph:
         Returns:
             节点对象，如果不存在则返回 None
         """
-        # 简单实现：只支持当前图中的节点名称
-        # 复杂的路径解析可以在 PathManager 中实现
+        # 规范化路径
+        path = PathManager.normalize_path(path)
+        
+        # 移除开头的 '/'
         if path.startswith('/'):
-            # 绝对路径
-            path = path[1:]  # 移除开头的 '/'
+            path = path[1:]
+        
+        # 空路径返回 None
+        if not path:
+            return None
         
         # 检查是否包含子图路径
         if '/' in path:
@@ -124,7 +130,7 @@ class NodeGraph:
             remaining_path = parts[1]
             
             if subgraph_name in self.subgraphs:
-                return self.subgraphs[subgraph_name].get_node(remaining_path)
+                return self.subgraphs[subgraph_name].get_node('/' + remaining_path)
             return None
         
         # 当前图中的节点
@@ -379,6 +385,51 @@ class NodeGraph:
             errors.append(str(e))
 
         return errors
+
+    def get_node_path(self, node: Node) -> Optional[str]:
+        """
+        获取节点的完整路径
+
+        Args:
+            node: 目标节点
+
+        Returns:
+            节点的完整路径，如果节点不在此图中则返回 None
+        """
+        # 检查节点是否在当前图中
+        if node.name in self.nodes and self.nodes[node.name] == node:
+            return PathManager.join_path(self.path, node.name)
+        
+        # 在子图中查找
+        for subgraph_name, subgraph in self.subgraphs.items():
+            subgraph_path = subgraph.get_node_path(node)
+            if subgraph_path:
+                return subgraph_path
+        
+        return None
+
+    def list_node_paths(self, include_subgraphs: bool = False) -> List[str]:
+        """
+        列出所有节点的路径
+
+        Args:
+            include_subgraphs: 是否包含子图中的节点
+
+        Returns:
+            节点路径列表
+        """
+        paths = []
+        
+        # 当前图中的节点
+        for node_name in self.nodes.keys():
+            paths.append(PathManager.join_path(self.path, node_name))
+        
+        # 子图中的节点
+        if include_subgraphs:
+            for subgraph in self.subgraphs.values():
+                paths.extend(subgraph.list_node_paths(include_subgraphs=True))
+        
+        return paths
 
     def to_dict(self) -> dict:
         """

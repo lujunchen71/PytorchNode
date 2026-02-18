@@ -22,6 +22,7 @@ class NodeCategory:
     """节点分类常量"""
     NN = "Neural Network"  # 神经网络层
     DATA = "Data"  # 数据处理
+    TRAINING = "Training"  # 训练相关（损失、优化器、检查点）
     LOGIC = "Logic"  # 逻辑控制
     SUBNET = "Subnet"  # 子网
     SCRIPT = "Script"  # 脚本
@@ -280,7 +281,7 @@ class Node(ABC):
         Returns:
             节点数据字典
         """
-        return {
+        result = {
             "id": self.id,
             "type": self.node_type,
             "name": self.name,
@@ -289,6 +290,12 @@ class Node(ABC):
             "input_pins": [pin.to_dict() for pin in self.input_pins.values()],
             "output_pins": [pin.to_dict() for pin in self.output_pins.values()]
         }
+        
+        # Phase 3.5: 序列化实例参数（动态参数）
+        if hasattr(self, 'instance_parameters') and self.instance_parameters:
+            result["instance_parameters"] = self.instance_parameters.copy()
+        
+        return result
 
     @classmethod
     def from_dict(cls, data: dict, node_graph: 'NodeGraph' = None) -> 'Node':
@@ -310,6 +317,10 @@ class Node(ABC):
         # 恢复属性
         for key, value in data.get("properties", {}).items():
             node.set_property(key, value)
+
+        # Phase 3.5: 恢复实例参数（动态参数）
+        if "instance_parameters" in data:
+            node.instance_parameters = data["instance_parameters"].copy()
 
         # 引脚在 init_pins 中已创建，这里只需要恢复默认值
         for pin_data in data.get("input_pins", []):

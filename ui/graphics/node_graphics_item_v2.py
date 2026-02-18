@@ -204,11 +204,17 @@ class NodeGraphicsItemV2(QGraphicsItem):
 
     def mousePressEvent(self, event):
         """鼠标按下事件"""
+        # 右键菜单
+        if event.button() == Qt.MouseButton.RightButton:
+            self._show_context_menu(event.screenPos())
+            event.accept()
+            return
+        
         button_width = self.width / 9
         pos = event.pos()
         
         # 检查是否点击了禁用按钮
-        if (0 <= pos.x() <= button_width and 
+        if (0 <= pos.x() <= button_width and
             self.header_height <= pos.y() <= self.header_height + self.body_height):
             self.toggle_disabled()
             event.accept()
@@ -222,6 +228,22 @@ class NodeGraphicsItemV2(QGraphicsItem):
             return
         
         super().mousePressEvent(event)
+    
+    def mouseDoubleClickEvent(self, event):
+        """鼠标双击事件 - 进入节点"""
+        from core.base.node import NodeCategory
+        logger.info(f"[DOUBLE CLICK] Node: {self.node.name}, category: {self.node.node_category}, type: {self.node.node_type}")
+        # 检查节点是否有子图（容器节点）
+        if self.node.node_category == NodeCategory.CONTEXT or hasattr(self.node.node_graph, 'subgraphs'):
+            # 通知场景/主窗口进入此节点
+            scene = self.scene()
+            if scene and hasattr(scene, 'node_double_clicked'):
+                scene.node_double_clicked.emit(self.node)
+                logger.info(f"Double-clicked node to enter: {self.node.name}")
+                event.accept()
+                return
+        
+        super().mouseDoubleClickEvent(event)
 
     def toggle_disabled(self):
         """切换禁用状态"""
@@ -242,3 +264,107 @@ class NodeGraphicsItemV2(QGraphicsItem):
             # TODO: 通知连接线更新
         
         return super().itemChange(change, value)
+    
+    def _show_context_menu(self, screen_pos):
+        """显示节点右键菜单"""
+        from PyQt6.QtWidgets import QMenu
+        
+        menu = QMenu()
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #2b2b2b;
+                color: #ffffff;
+                border: 1px solid #555;
+                padding: 5px;
+            }
+            QMenu::item {
+                padding: 5px 20px 5px 20px;
+            }
+            QMenu::item:selected {
+                background-color: #3d8ec9;
+            }
+            QMenu::separator {
+                height: 1px;
+                background-color: #555;
+                margin: 5px 0px;
+            }
+        """)
+        
+        # 获取场景中选中的节点数量
+        selected_count = len(self.scene().selectedItems())
+        
+        # 删除动作
+        delete_action = menu.addAction("删除 (Delete)")
+        delete_action.triggered.connect(lambda: self._on_delete_requested())
+        
+        # 复制动作（TODO）
+        copy_action = menu.addAction("复制 (Ctrl+C)")
+        copy_action.setEnabled(False)  # 暂未实现
+        copy_action.triggered.connect(lambda: self._on_copy_requested())
+        
+        menu.addSeparator()
+        
+        # 如果选中了多个节点，显示打包选项
+        if selected_count > 1:
+            pack_action = menu.addAction(f"打包为子网络 ({selected_count}个节点)")
+            pack_action.triggered.connect(lambda: self._on_pack_subnet_requested())
+        
+        # 禁用/启用
+        if self._is_disabled:
+            enable_action = menu.addAction("启用节点")
+            enable_action.triggered.connect(lambda: self.toggle_disabled())
+        else:
+            disable_action = menu.addAction("禁用节点")
+            disable_action.triggered.connect(lambda: self.toggle_disabled())
+        
+        menu.addSeparator()
+        
+        # 属性编辑
+        properties_action = menu.addAction("编辑参数...")
+        properties_action.triggered.connect(lambda: self._on_edit_properties())
+        
+        # 显示菜单
+        menu.exec(screen_pos)
+    
+    def _on_delete_requested(self):
+        """删除节点请求"""
+        scene = self.scene()
+        if scene and hasattr(scene, 'node_delete_requested'):
+            # 获取所有选中的节点
+            from .node_graphics_item_v2 import NodeGraphicsItemV2
+            selected_nodes = []
+            for item in scene.selectedItems():
+                if isinstance(item, NodeGraphicsItemV2):
+                    selected_nodes.append(item.node)
+            
+            # 如果没有选中节点，删除当前节点
+            if not selected_nodes:
+                selected_nodes = [self.node]
+            
+            scene.node_delete_requested.emit(selected_nodes)
+            logger.info(f"Delete requested for {len(selected_nodes)} nodes")
+    
+    def _on_copy_requested(self):
+        """复制节点请求"""
+        # TODO: 实现复制功能
+        logger.info(f"Copy requested for node: {self.node.name}")
+    
+    def _on_pack_subnet_requested(self):
+        """打包为子网络请求"""
+        scene = self.scene()
+        if scene and hasattr(scene, 'pack_subnet_requested'):
+            # 获取所有选中的节点
+            from .node_graphics_item_v2 import NodeGraphicsItemV2
+            selected_nodes = []
+            for item in scene.selectedItems():
+                if isinstance(item, NodeGraphicsItemV2):
+                    selected_nodes.append(item.node)
+            
+            scene.pack_subnet_requested.emit(selected_nodes)
+            logger.info(f"Pack subnet requested for {len(selected_nodes)} nodes")
+    
+    def _on_edit_properties(self):
+        """编辑属性"""
+        scene = self.scene()
+        if scene and hasattr(scene, 'node_double_clicked'):
+            scene.node_double_clicked.emit(self.node)

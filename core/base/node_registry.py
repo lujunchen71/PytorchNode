@@ -121,6 +121,40 @@ class NodeRegistry:
             节点类型列表
         """
         return self._categories.get(category, []).copy()
+    
+    def get_nodes_for_context(self, context_path: str) -> List[str]:
+        """
+        根据上下文路径获取可用的节点类型
+        
+        Args:
+            context_path: 上下文路径（如 '/obj', '/vis', '/train'）
+            
+        Returns:
+            可用的节点类型列表
+        """
+        # 解析路径，获取根路径
+        path_parts = context_path.strip('/').split('/')
+        if not path_parts or not path_parts[0]:
+            # 空路径，返回所有节点
+            return self.get_all_node_types()
+        
+        root_context = path_parts[0]  # 'obj', 'vis', 或 'train'
+        
+        # 根据根路径确定允许的节点类别
+        context_categories_map = {
+            'obj': [NodeCategory.NN, NodeCategory.SUBNET, NodeCategory.MATH, NodeCategory.TRANSFORM],
+            'vis': [NodeCategory.VISUALIZATION, NodeCategory.DATA],
+            'train': [NodeCategory.TRAINING, NodeCategory.DATA, NodeCategory.LOGIC],
+        }
+        
+        allowed_categories = context_categories_map.get(root_context, [])
+        
+        # 收集所有允许类别的节点
+        available_nodes = []
+        for category in allowed_categories:
+            available_nodes.extend(self.get_nodes_in_category(category))
+        
+        return available_nodes
 
     def search_nodes(self, query: str) -> List[str]:
         """

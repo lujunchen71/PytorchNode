@@ -100,15 +100,19 @@ class Connection:
     def to_dict(self) -> dict:
         """
         序列化为字典
+        
+        使用节点ID而不是路径，因为：
+        - 节点ID是稳定的，不会因为打包/移动而改变
+        - 路径会在节点被打包到子网时发生变化，导致连接失效
 
         Returns:
             连接数据字典
         """
         return {
             "id": self.id,
-            "source_node": self.source_node.path,
+            "source_node_id": self.source_node.id,
             "source_pin": self.source_pin.name,
-            "target_node": self.target_node.path,
+            "target_node_id": self.target_node.id,
             "target_pin": self.target_pin.name
         }
 
@@ -127,14 +131,24 @@ class Connection:
         Raises:
             ValueError: 如果引用的节点或引脚不存在
         """
-        # 查找节点
-        source_node = node_graph.get_node(data["source_node"])
-        target_node = node_graph.get_node(data["target_node"])
+        # 优先使用节点ID查找（推荐方式）
+        source_node = None
+        target_node = None
+        
+        if "source_node_id" in data:
+            source_node = node_graph.get_node_by_id(data["source_node_id"])
+            target_node = node_graph.get_node_by_id(data["target_node_id"])
+        elif "source_node" in data:
+            # 兼容旧格式（基于路径）
+            source_node = node_graph.get_node(data["source_node"])
+            target_node = node_graph.get_node(data["target_node"])
 
         if source_node is None:
-            raise ValueError(f"Source node not found: {data['source_node']}")
+            source_id = data.get("source_node_id", data.get("source_node", "unknown"))
+            raise ValueError(f"Source node not found: {source_id}")
         if target_node is None:
-            raise ValueError(f"Target node not found: {data['target_node']}")
+            target_id = data.get("target_node_id", data.get("target_node", "unknown"))
+            raise ValueError(f"Target node not found: {target_id}")
 
         # 查找引脚
         source_pin = source_node.get_output_pin(data["source_pin"])
@@ -142,11 +156,11 @@ class Connection:
 
         if source_pin is None:
             raise ValueError(
-                f"Source pin not found: {data['source_node']}.{data['source_pin']}"
+                f"Source pin not found: {source_node.name}.{data['source_pin']}"
             )
         if target_pin is None:
             raise ValueError(
-                f"Target pin not found: {data['target_node']}.{data['target_pin']}"
+                f"Target pin not found: {target_node.name}.{data['target_pin']}"
             )
 
         # 创建连接

@@ -2,92 +2,153 @@
   "version": "0.1.0",
   "type": "pnne_project",
   "graph": {
-    "name": "main_graph",
-    "nodes": [
-      {
-        "id": "77640a14-63d6-4947-9d59-fda6e428a387",
-        "type": "TestInput",
-        "name": "TestInput_77640a14",
-        "position": [
-          -362.0,
-          -168.0
-        ],
-        "properties": {},
-        "input_pins": [],
-        "output_pins": [
+    "name": "root",
+    "nodes": [],
+    "connections": [],
+    "subgraphs": {
+      "obj": {
+        "name": "obj",
+        "nodes": [
           {
-            "name": "output",
-            "direction": "output",
-            "type": "tensor",
-            "default_value": null,
-            "is_list": false,
-            "label": "输出"
+            "id": "8f0d15c9-584c-4efe-ae79-23e3ea599d5d",
+            "type": "root.obj",
+            "name": "obj",
+            "position": [
+              0,
+              0
+            ],
+            "properties": {
+              "is_root": true,
+              "deletable": false,
+              "description": "神经网络对象构建路径"
+            },
+            "input_pins": [],
+            "output_pins": []
+          },
+          {
+            "id": "efc77a3d-ce40-4228-9798-2cda440893b0",
+            "type": "Linear",
+            "name": "Linear_efc77a3d",
+            "position": [
+              -71.0,
+              -132.0
+            ],
+            "properties": {
+              "in_features": 128,
+              "out_features": 64,
+              "bias": true
+            },
+            "input_pins": [
+              {
+                "name": "input",
+                "direction": "input",
+                "type": "tensor",
+                "default_value": null,
+                "is_list": false,
+                "label": "输入"
+              }
+            ],
+            "output_pins": [
+              {
+                "name": "output",
+                "direction": "output",
+                "type": "tensor",
+                "default_value": null,
+                "is_list": false,
+                "label": "输出"
+              }
+            ]
+          },
+          {
+            "id": "db2e1ad4-2b5f-4944-b9e5-170b6f5bddd0",
+            "type": "ReLU",
+            "name": "ReLU_db2e1ad4",
+            "position": [
+              -130.0,
+              33.0
+            ],
+            "properties": {
+              "inplace": false
+            },
+            "input_pins": [
+              {
+                "name": "input",
+                "direction": "input",
+                "type": "tensor",
+                "default_value": null,
+                "is_list": false,
+                "label": "输入"
+              }
+            ],
+            "output_pins": [
+              {
+                "name": "output",
+                "direction": "output",
+                "type": "tensor",
+                "default_value": null,
+                "is_list": false,
+                "label": "输出"
+              }
+            ]
           }
-        ]
+        ],
+        "connections": [
+          {
+            "id": "9eafc1bf-8a17-4d8c-b273-077c4feaa354",
+            "source_node_id": "efc77a3d-ce40-4228-9798-2cda440893b0",
+            "source_pin": "output",
+            "target_node_id": "db2e1ad4-2b5f-4944-b9e5-170b6f5bddd0",
+            "target_pin": "input"
+          }
+        ],
+        "subgraphs": {}
       },
-      {
-        "id": "e16b9196-bee5-426d-a46c-eef0e9dfc489",
-        "type": "TestProcess",
-        "name": "TestProcess_e16b9196",
-        "position": [
-          -220.0,
-          47.0
-        ],
-        "properties": {
-          "value": 42
-        },
-        "input_pins": [
+      "vis": {
+        "name": "vis",
+        "nodes": [
           {
-            "name": "input",
-            "direction": "input",
-            "type": "tensor",
-            "default_value": null,
-            "is_list": false,
-            "label": "输入"
+            "id": "435657fb-7b88-4e3e-948e-8284a86490ea",
+            "type": "root.vis",
+            "name": "vis",
+            "position": [
+              0,
+              0
+            ],
+            "properties": {
+              "is_root": true,
+              "deletable": false,
+              "description": "可视化与监控路径"
+            },
+            "input_pins": [],
+            "output_pins": []
           }
         ],
-        "output_pins": [
-          {
-            "name": "output",
-            "direction": "output",
-            "type": "tensor",
-            "default_value": null,
-            "is_list": false,
-            "label": "输出"
-          }
-        ]
+        "connections": [],
+        "subgraphs": {}
       },
-      {
-        "id": "0da9a8f0-7c55-4826-a43c-cb50f212dbaf",
-        "type": "TestInput",
-        "name": "TestInput_0da9a8f0",
-        "position": [
-          81.53201282156655,
-          149.25618476206134
-        ],
-        "properties": {},
-        "input_pins": [],
-        "output_pins": [
+      "train": {
+        "name": "train",
+        "nodes": [
           {
-            "name": "output",
-            "direction": "output",
-            "type": "tensor",
-            "default_value": null,
-            "is_list": false,
-            "label": "输出"
+            "id": "679ec042-1d16-4198-88b2-7946b61ba28f",
+            "type": "root.train",
+            "name": "train",
+            "position": [
+              0,
+              0
+            ],
+            "properties": {
+              "is_root": true,
+              "deletable": false,
+              "description": "训练流程定义路径"
+            },
+            "input_pins": [],
+            "output_pins": []
           }
-        ]
+        ],
+        "connections": [],
+        "subgraphs": {}
       }
-    ],
-    "connections": [
-      {
-        "id": "fc60f5fe-e0e1-469a-96b7-f18163be4baa",
-        "source_node": "/TestInput_77640a14",
-        "source_pin": "output",
-        "target_node": "/TestProcess_e16b9196",
-        "target_pin": "input"
-      }
-    ],
-    "subgraphs": {}
+    }
   }
 }

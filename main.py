@@ -79,8 +79,19 @@ def main():
 
     # 日志记录
     import logging
+    import os
     logger = logging.getLogger(__name__)
     logger.info("Starting PNNE - PyTorch Neural Network Editor")
+
+    # 重要：在导入 PyQt6 之前先导入 torch，避免 DLL 加载冲突
+    logger.info("Pre-loading PyTorch to avoid DLL conflicts...")
+    try:
+        os.environ['PYTORCH_NO_CUDA'] = '1'
+        os.environ['CUDA_VISIBLE_DEVICES'] = ''
+        import torch
+        logger.info(f"PyTorch {torch.__version__} loaded successfully")
+    except Exception as e:
+        logger.warning(f"Failed to pre-load PyTorch: {e}")
 
     try:
         # 导入 Qt 应用
@@ -101,11 +112,63 @@ def main():
         # 导入节点类型（触发注册）
         logger.info("Registering node types...")
         try:
-            # 导入测试节点
-            from tests.test_node_core_simple import TestInputNode, TestProcessNode
-            logger.info("Test nodes registered")
+            # 导入核心节点模块以触发装饰器注册
+            import core.nodes
+            logger.info(f"Registered {len(core.nodes.__all__)} node types")
         except Exception as e:
-            logger.warning(f"Failed to import test nodes: {e}")
+            logger.warning(f"Failed to import core nodes: {e}")
+            # 尝试单独导入节点模块（不依赖 PyTorch DLL）
+            logger.info("Attempting to import node modules individually...")
+            try:
+                # 先导入基类和注册表
+                from core.base.node import Node, NodeCategory
+                from core.base.node_registry import register_node
+                
+                # 导入根节点（不依赖 PyTorch）
+                from core.nodes.context.root_nodes import ObjRootNode, VisRootNode, TrainRootNode
+                logger.info("Registered root nodes")
+                
+                # 尝试导入 NN 节点
+                try:
+                    from core.nodes.nn.linear_node import LinearNode
+                    from core.nodes.nn.activation_nodes import ReLUNode, SigmoidNode, TanhNode
+                    logger.info("Registered NN nodes")
+                except Exception as nn_e:
+                    logger.warning(f"Failed to import NN nodes: {nn_e}")
+                
+                # 尝试导入训练节点
+                try:
+                    from core.nodes.training.loss_nodes import CrossEntropyLossNode, MSELossNode
+                    from core.nodes.training.optimizer_nodes import SGDNode, AdamNode
+                    from core.nodes.training.save_model_node import SaveModelNode
+                    from core.nodes.training.load_model_node import LoadModelNode
+                    logger.info("Registered training nodes")
+                except Exception as train_e:
+                    logger.warning(f"Failed to import training nodes: {train_e}")
+                
+                # 尝试导入控制流节点
+                try:
+                    from core.nodes.control.foreach_nodes import ForEachBeginNode, ForEachDataNode, ForEachEndNode
+                    logger.info("Registered control flow nodes (ForEach)")
+                except Exception as ctrl_e:
+                    logger.warning(f"Failed to import control nodes: {ctrl_e}")
+                
+                # 尝试导入子网络节点
+                try:
+                    from core.nodes.subnet.subnet_node import SubnetNode
+                    logger.info("Registered subnet node")
+                except Exception as subnet_e:
+                    logger.warning(f"Failed to import subnet node: {subnet_e}")
+                
+                # 尝试导入数据节点
+                try:
+                    from core.nodes.data.dataset_nodes import MNISTNode, CIFAR10Node
+                    logger.info("Registered data nodes")
+                except Exception as data_e:
+                    logger.warning(f"Failed to import data nodes: {data_e}")
+                    
+            except Exception as fallback_e:
+                logger.error(f"Failed to import any node modules: {fallback_e}")
 
         # 导入主窗口（延迟导入以加快启动速度）
         logger.info("Loading main window...")

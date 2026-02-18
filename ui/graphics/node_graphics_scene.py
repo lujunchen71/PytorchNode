@@ -18,9 +18,12 @@ class NodeGraphicsScene(QGraphicsScene):
     # 自定义信号
     node_created = Signal(str, float, float)  # 节点类型, x, y
     node_selected = Signal(object)  # 节点对象
+    node_double_clicked = Signal(object)  # 节点对象（双击进入）
     nodes_deleted = Signal(list)  # 节点列表
     connection_created = Signal(object, object)  # 源引脚, 目标引脚
     connection_deleted = Signal(object)  # 连接对象
+    node_delete_requested = Signal(list)  # 删除节点请求（节点列表）
+    pack_subnet_requested = Signal(list)  # 打包子网络请求（节点列表）
 
     def __init__(self, parent=None):
         """初始化场景"""

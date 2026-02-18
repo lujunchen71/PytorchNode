@@ -48,6 +48,9 @@ class NodeGraphicsView(QGraphicsView):
         self._is_selecting = False
         self._selection_start = QPoint()
         self._rubber_band = None
+        
+        # 当前路径上下文（用于过滤可创建的节点）
+        self.current_path = "/obj"  # 默认路径
 
         logger.info("Node graphics view initialized")
 
@@ -242,6 +245,7 @@ class NodeGraphicsView(QGraphicsView):
         scene_pos = self.mapToScene(pos)
 
         logger.info(f"Showing context menu at scene position: ({scene_pos.x():.1f}, {scene_pos.y():.1f})")
+        logger.info(f"Current path context: {self.current_path}")
 
         # 创建菜单
         menu = QMenu(self)
@@ -267,20 +271,32 @@ class NodeGraphicsView(QGraphicsView):
 
         # 获取节点注册表
         registry = get_registry()
-        categories = registry.get_categories()
-
-        if not categories:
-            # 如果没有注册的节点，显示提示
-            no_nodes_action = menu.addAction("(没有可用的节点)")
+        
+        # 根据当前路径获取可用的节点类型
+        available_node_types = registry.get_nodes_for_context(self.current_path)
+        
+        if not available_node_types:
+            # 如果没有可用的节点，显示提示
+            no_nodes_action = menu.addAction(f"(在 {self.current_path} 路径下没有可用的节点)")
             no_nodes_action.setEnabled(False)
         else:
+            # 按分类组织可用节点
+            categories_with_nodes = {}
+            for node_type in available_node_types:
+                node_info = registry.get_node_info(node_type)
+                if node_info:
+                    category = node_info.get("category", "Other")
+                    if category not in categories_with_nodes:
+                        categories_with_nodes[category] = []
+                    categories_with_nodes[category].append(node_type)
+            
             # 按分类添加节点
-            for category in sorted(categories):
+            for category in sorted(categories_with_nodes.keys()):
                 # 创建子菜单
                 category_menu = menu.addMenu(category)
                 
                 # 获取该分类下的所有节点
-                node_types = registry.get_nodes_in_category(category)
+                node_types = categories_with_nodes[category]
                 
                 for node_type in sorted(node_types):
                     # 获取节点信息
